@@ -21,8 +21,6 @@ var compiledRegexes = map[string][]*regexp.Regexp{
 // will hold results from the scan
 var results []string
 
-var progress chan int = make(chan int)
-
 func scanFiles(path string, info os.FileInfo, err error) error {
 
 	file, _ := os.Open(path)
@@ -43,7 +41,6 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 			}
 			lineNumber++
 		}
-		progress <- 1
 	}
 
 	return nil
@@ -55,8 +52,5 @@ func Dig(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	progress <- 2
-	close(progress)
-
 	return results, nil
 }
