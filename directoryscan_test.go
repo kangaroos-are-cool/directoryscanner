@@ -12,7 +12,7 @@ var _ = Describe("Directoryscan", func() {
 	Describe("Scanning a folder with 8 known findings", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 8 findings", func() {
-				results, _ := directoryscanner.Scan("./secret")
+				results, _ := directoryscanner.Scan("./test_cases")
 				Expect(len(results)).To(Equal(8))
 			})
 		})
@@ -24,7 +24,7 @@ var _ = Describe("CreditCardScan", func() {
 	Describe("Scanning a folder with 2 known Credit Card findings", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 2 findings", func() {
-				results, _ := directoryscanner.Find("./secret", "Credit Card")
+				results, _ := directoryscanner.Find("./test_cases", "Credit Card")
 				Expect(len(results)).To(Equal(2))
 			})
 		})
@@ -36,7 +36,7 @@ var _ = Describe("SSNScan", func() {
 	Describe("Scanning a folder with 4 known SSN findings", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 4 findings", func() {
-				results, _ := directoryscanner.Find("./secret", "SSN")
+				results, _ := directoryscanner.Find("./test_cases", "SSN")
 				Expect(len(results)).To(Equal(4))
 			})
 		})
@@ -48,7 +48,7 @@ var _ = Describe("PasswordScan", func() {
 	Describe("Scanning a folder with 1 known \"Word Password\" finding", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 1 finding", func() {
-				results, _ := directoryscanner.Find("./secret", "Word Password")
+				results, _ := directoryscanner.Find("./test_cases", "Word Password")
 				Expect(len(results)).To(Equal(1))
 			})
 		})
@@ -60,7 +60,7 @@ var _ = Describe("UsernameScan", func() {
 	Describe("Scanning a folder with 1 known \"Word Username\" finding", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 1 finding", func() {
-				results, _ := directoryscanner.Find("./secret", "Word Username")
+				results, _ := directoryscanner.Find("./test_cases", "Word Username")
 				Expect(len(results)).To(Equal(1))
 			})
 		})
@@ -72,7 +72,7 @@ var _ = Describe("MultipleScan", func() {
 	Describe("Scanning a folder with 7 known total findings of SSN, Word Username, and Credit Card types", func() {
 		Context("less than 100 MB in size", func() {
 			It("should return 7 findings", func() {
-				results, _ := directoryscanner.Find("./secret", "SSN", "Word Username", "Credit Card")
+				results, _ := directoryscanner.Find("./test_cases", "SSN", "Word Username", "Credit Card")
 				Expect(len(results)).To(Equal(7))
 			})
 		})

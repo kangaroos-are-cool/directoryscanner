@@ -49,6 +49,7 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 	return err
 }
 
+// this function is passed to the Walk() function to find specific files
 func findSpecific(path string, info os.FileInfo, err error) error {
 
 	file, err := os.Open(path)
