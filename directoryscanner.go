@@ -19,11 +19,13 @@ var compiledRegexes = map[string][]*regexp.Regexp{
 }
 
 // will hold results from the scan
-var results []string
+var resultsScan []string
+var resultsFind []string
+var selectedTypes []string
 
 func scanFiles(path string, info os.FileInfo, err error) error {
 
-	file, _ := os.Open(path)
+	file, err := os.Open(path)
 	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
@@ -34,7 +36,7 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 				for _, r := range cr {
 					if found := r.Find([]byte(fscanner.Text())); found != nil {
 						resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-						results = append(results, resultsString)
+						resultsScan = append(resultsScan, resultsString)
 
 					}
 				}
@@ -42,15 +44,59 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 			lineNumber++
 		}
 	}
-
-	return nil
+	return err
 }
 
-// Dig ...
-func Dig(path string) ([]string, error) {
+func findSpecific(path string, info os.FileInfo, err error) error {
+
+	file, err := os.Open(path)
+	fscanner := bufio.NewScanner(file)
+	lineNumber := 1
+	var resultsString string
+	// skip the source code
+	if file.Name() != "directory_scanner.go" {
+		for fscanner.Scan() {
+			for _, dataType := range selectedTypes {
+				for key, cr := range compiledRegexes {
+					if dataType == key {
+						for _, r := range cr {
+							if found := r.Find([]byte(fscanner.Text())); found != nil {
+								resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+								resultsFind = append(resultsFind, resultsString)
+							}
+						}
+					} else {
+						continue
+					}
+				}
+			}
+			lineNumber++
+		}
+	}
+
+	return err
+}
+
+// Scan ...
+// begins at the specified path (path) and recursively searches all directories
+// acceptable arguments for variatic function: "Credit Card", "SSN", "Word Password", "Word Username", "Email"
+func Scan(path string, dataTypes ...string) ([]string, error) {
+	resultsScan = nil
 	err := filepath.Walk(path, scanFiles)
 	if err != nil {
 		return nil, err
 	}
-	return results, nil
+	return resultsScan, nil
+}
+
+// Find ...
+func Find(path string, dataTypes ...string) ([]string, error) {
+	resultsFind = nil
+	resultsFind = make([]string, 0)
+	selectedTypes = append(selectedTypes, dataTypes...)
+	err := filepath.Walk(path, findSpecific)
+	if err != nil {
+		return nil, err
+	}
+	return resultsFind, nil
 }
