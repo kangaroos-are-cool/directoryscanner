@@ -2,6 +2,7 @@
 **A simple go module for scanning directories for sensitive information (or really anything you want)
 
 ##How to Use
+
 '''
 import github.com/audrey-morrisette/directoryscanner
 ...
