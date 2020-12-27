@@ -6,9 +6,9 @@
 ## How to Use
 
 ```
-import "github.com/audrey-morrisette/directoryscanner"
+import ds "github.com/audrey-morrisette/directoryscanner"
 ...
-directoryscanner.Scan(".")
+ds.Scan(".")
 ```
 
 `Scan()` returns a slice of strings containing all findings from the given directory
