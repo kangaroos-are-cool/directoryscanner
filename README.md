@@ -3,14 +3,14 @@
 
 ## How to Use
 
-"""
+```
 import github.com/audrey-morrisette/directoryscanner
 ...
 directoryscanner.Scan(".")
-"""
+```
 
 `Scan()` returns a slice of strings containing all findings from the given directory
 
-##TODO:
+## TODO:
 - [ ] Add simpler way to add new items to scan for
 - [ ] Performance Improvements
