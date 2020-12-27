@@ -6,7 +6,7 @@
 ## How to Use
 
 ```
-import github.com/audrey-morrisette/directoryscanner
+import "github.com/audrey-morrisette/directoryscanner"
 ...
 directoryscanner.Scan(".")
 ```
