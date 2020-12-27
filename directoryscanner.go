@@ -80,7 +80,6 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 
 // Scan ...
 // begins at the specified path (path) and recursively searches all directories
-// acceptable arguments for variatic function: "Credit Card", "SSN", "Word Password", "Word Username", "Email"
 func Scan(path string) ([]string, error) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -93,6 +92,8 @@ func Scan(path string) ([]string, error) {
 }
 
 // Find ...
+// begins at the specified path (path) and recursively searches all directories
+// acceptable arguments for variatic function: "Credit Card", "SSN", "Word Password", "Word Username", "Email"
 func Find(path string, dataTypes ...string) ([]string, error) {
 	mu.Lock()
 	defer mu.Unlock()
