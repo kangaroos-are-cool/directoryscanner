@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"sync"
 )
 
 var compiledRegexes = map[string][]*regexp.Regexp{
@@ -20,8 +21,8 @@ var compiledRegexes = map[string][]*regexp.Regexp{
 
 // will hold results from the scan
 var resultsScan []string
-var resultsFind []string
 var selectedTypes []string
+var mu sync.Mutex
 
 func scanFiles(path string, info os.FileInfo, err error) error {
 
@@ -62,7 +63,7 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 						for _, r := range cr {
 							if found := r.Find([]byte(fscanner.Text())); found != nil {
 								resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-								resultsFind = append(resultsFind, resultsString)
+								resultsScan = append(resultsScan, resultsString)
 							}
 						}
 					} else {
@@ -80,7 +81,9 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 // Scan ...
 // begins at the specified path (path) and recursively searches all directories
 // acceptable arguments for variatic function: "Credit Card", "SSN", "Word Password", "Word Username", "Email"
-func Scan(path string, dataTypes ...string) ([]string, error) {
+func Scan(path string) ([]string, error) {
+	mu.Lock()
+	defer mu.Unlock()
 	resultsScan = nil
 	err := filepath.Walk(path, scanFiles)
 	if err != nil {
@@ -91,12 +94,14 @@ func Scan(path string, dataTypes ...string) ([]string, error) {
 
 // Find ...
 func Find(path string, dataTypes ...string) ([]string, error) {
-	resultsFind = nil
-	resultsFind = make([]string, 0)
+	mu.Lock()
+	defer mu.Unlock()
+	resultsScan = nil
+	selectedTypes = nil
 	selectedTypes = append(selectedTypes, dataTypes...)
 	err := filepath.Walk(path, findSpecific)
 	if err != nil {
 		return nil, err
 	}
-	return resultsFind, nil
+	return resultsScan, nil
 }
