@@ -1,5 +1,5 @@
 # directoryscanner
-**A simple go module for scanning directories for sensitive information (or really anything you want)
+**A simple go module for scanning directories for sensitive information (or really anything you want)**
 
 ##How to Use
 
