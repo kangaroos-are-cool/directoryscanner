@@ -14,7 +14,9 @@ ds.Scan(".")
 ```
 
 `Scan(path string)` returns a slice of strings containing all findings from the given directory
+
 `Find(path string, dataTypes ...string)` returns a slice of strings containing all the findings specified by the variadic parameter 'dataTypes'
+
 `FindString(path string, strings ...string)` returns a slice of strings containing all findings as specified by the variadic parameter 'strings' which can contain any string you like
 
 ## TODO:
