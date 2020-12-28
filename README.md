@@ -13,8 +13,11 @@ import ds "github.com/audrey-morrisette/directoryscanner"
 ds.Scan(".")
 ```
 
-`Scan()` returns a slice of strings containing all findings from the given directory
+`Scan(path string)` returns a slice of strings containing all findings from the given directory
+`Find(path string, dataTypes ...string)` returns a slice of strings containing all the findings specified by the variadic parameter 'dataTypes'
+`FindString(path string, strings ...string)` returns a slice of strings containing all findings as specified by the variadic parameter 'strings' which can contain any string you like
 
 ## TODO:
 - [ ] Add simpler way to add new items to scan for
+- [ ] Improve Documentation
 - [ ] Performance Improvements
