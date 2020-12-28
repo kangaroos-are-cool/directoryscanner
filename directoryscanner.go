@@ -25,6 +25,7 @@ var CompiledRegexes = map[string][]*regexp.Regexp{
 // None of these are accessible outside the module
 var resultsScan []string
 var selectedTypes []string
+var selectedStrings []string
 var mu sync.Mutex
 
 func scanFiles(path string, info os.FileInfo, err error) error {
@@ -33,57 +34,74 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
-	// skip the source code
-	if file.Name() != "directory_scanner.go" {
-		for fscanner.Scan() {
-			for key, cr := range CompiledRegexes {
-				for _, r := range cr {
-					if found := r.Find([]byte(fscanner.Text())); found != nil {
-						resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-						resultsScan = append(resultsScan, resultsString)
 
-					}
+	for fscanner.Scan() {
+		for key, cr := range CompiledRegexes {
+			for _, r := range cr {
+				if found := r.Find([]byte(fscanner.Text())); found != nil {
+					resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+					resultsScan = append(resultsScan, resultsString)
+
 				}
 			}
-			lineNumber++
 		}
+		lineNumber++
 	}
+
 	return err
 }
 
-// this function is passed to the Walk() function to find specific files
 func findSpecific(path string, info os.FileInfo, err error) error {
 
 	file, err := os.Open(path)
 	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
-	// skip the source code
-	if file.Name() != "directory_scanner.go" {
-		for fscanner.Scan() {
-			for _, dataType := range selectedTypes {
-				for key, cr := range CompiledRegexes {
-					if dataType == key {
-						for _, r := range cr {
-							if found := r.Find([]byte(fscanner.Text())); found != nil {
-								resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-								resultsScan = append(resultsScan, resultsString)
-							}
+
+	for fscanner.Scan() {
+		for _, dataType := range selectedTypes {
+			for key, cr := range CompiledRegexes {
+				if dataType == key {
+					for _, r := range cr {
+						if found := r.Find([]byte(fscanner.Text())); found != nil {
+							resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+							resultsScan = append(resultsScan, resultsString)
 						}
-					} else {
-						continue
 					}
+				} else {
+					continue
 				}
 			}
-			lineNumber++
 		}
+		lineNumber++
+	}
+
+	return err
+}
+
+func findString(path string, info os.FileInfo, err error) error {
+
+	file, err := os.Open(path)
+	fscanner := bufio.NewScanner(file)
+	lineNumber := 1
+	var resultsString string
+
+	for fscanner.Scan() {
+		for _, v := range selectedStrings {
+			r := regexp.MustCompile(v)
+			if found := r.Find([]byte(fscanner.Text())); found != nil {
+				resultsString = v + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+				resultsScan = append(resultsScan, resultsString)
+			}
+		}
+		lineNumber++
 	}
 
 	return err
 }
 
 // Scan ...
-// begins at the specified path (path) and recursively searches all directories
+// begins at the specified path (path) and recursively searches all directories for PII
 func Scan(path string) ([]string, error) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -105,6 +123,23 @@ func Find(path string, dataTypes ...string) ([]string, error) {
 	selectedTypes = nil
 	selectedTypes = append(selectedTypes, dataTypes...)
 	err := filepath.Walk(path, findSpecific)
+	if err != nil {
+		return nil, err
+	}
+	return resultsScan, nil
+}
+
+// FindString ...
+// Finds in the directory "path" all files and locations within those files containing
+// any of the strings contained within the variadic parameter "strings"
+func FindString(path string, strings ...string) ([]string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	resultsScan = nil
+	selectedStrings = nil
+	selectedStrings = append(selectedStrings, strings...)
+	err := filepath.Walk(path, findString)
 	if err != nil {
 		return nil, err
 	}
