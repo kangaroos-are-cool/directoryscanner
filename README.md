@@ -32,3 +32,5 @@ returns a slice of strings containing all findings as specified by the variadic 
 - [x] Add simpler way to add new items to scan for
 - [x] Improve Documentation
 - [ ] Performance Improvements
+- [ ] Function to export findings to file
+- [ ] Add ability to scan .zip/.rar files
