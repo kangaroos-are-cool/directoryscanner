@@ -8,9 +8,15 @@
 ## How to Use
 
 ```
-import ds "github.com/audrey-morrisette/directoryscanner"
+import(
+    ds "github.com/audrey-morrisette/directoryscanner"
+    ...
+)
 ...
-ds.Scan(".")
+results, err := ds.Scan(".")
+for _, result := range results{
+    fmt.Println(result)
+}
 ```
 
 `Scan(path string)`  
@@ -23,6 +29,6 @@ returns a slice of strings containing all the findings specified by the variadic
 returns a slice of strings containing all findings as specified by the variadic parameter 'strings' which can contain any string you like
 
 ## TODO:
-- [ ] Add simpler way to add new items to scan for
-- [ ] Improve Documentation
+- [x] Add simpler way to add new items to scan for
+- [x] Improve Documentation
 - [ ] Performance Improvements
