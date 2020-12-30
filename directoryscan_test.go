@@ -9,11 +9,11 @@ import (
 
 // Test for generic sensitive data
 var _ = Describe("Directoryscan", func() {
-	Describe("Scanning a folder with 8 known findings", func() {
+	Describe("Scanning a folder with 16 known findings", func() {
 		Context("less than 100 MB in size", func() {
-			It("should return 8 findings", func() {
+			It("should return 16 findings", func() {
 				results, _ := directoryscanner.Scan("./test_cases")
-				Expect(len(results)).To(Equal(8))
+				Expect(len(results)).To(Equal(16))
 			})
 		})
 	})

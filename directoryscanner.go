@@ -3,6 +3,7 @@
 package directoryscanner
 
 import (
+	"archive/zip"
 	"bufio"
 	"os"
 	"path/filepath"
@@ -29,22 +30,55 @@ var mu sync.Mutex
 
 func scanFiles(path string, info os.FileInfo, err error) error {
 
-	file, err := os.Open(path)
-	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
 
-	for fscanner.Scan() {
-		for key, cr := range compiledRegexes {
-			for _, r := range cr {
-				if found := r.Find([]byte(fscanner.Text())); found != nil {
-					resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-					resultsScan = append(resultsScan, resultsString)
+	switch ext := filepath.Ext(info.Name()); ext {
+	case ".zip":
+		r, err := zip.OpenReader(path)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+		for _, f := range r.File {
+			rc, err := f.Open()
+			fscanner := bufio.NewScanner(rc)
+			if err != nil {
+				return err
+			}
+			for fscanner.Scan() {
+				for key, cr := range compiledRegexes {
+					for _, r := range cr {
+						if found := r.Find([]byte(fscanner.Text())); found != nil {
+							resultsString = key + `,` + string(found) + `,` + f.Name + `,` + strconv.Itoa(lineNumber)
+							resultsScan = append(resultsScan, resultsString)
 
+						}
+					}
+				}
+				lineNumber++
+			}
+			lineNumber = 1
+		}
+
+	default:
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		fscanner := bufio.NewScanner(file)
+		for fscanner.Scan() {
+			for key, cr := range compiledRegexes {
+				for _, r := range cr {
+					if found := r.Find([]byte(fscanner.Text())); found != nil {
+						resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+						resultsScan = append(resultsScan, resultsString)
+
+					}
 				}
 			}
+			lineNumber++
 		}
-		lineNumber++
 	}
 
 	return err
@@ -102,6 +136,20 @@ func findString(path string, info os.FileInfo, err error) error {
 // Scan ...
 // begins at the specified path (path) and recursively searches all directories for PII
 func Scan(path string) ([]string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+	resultsScan = nil
+	err := filepath.Walk(path, scanFiles)
+	if err != nil {
+		return nil, err
+	}
+	return resultsScan, nil
+}
+
+// ScanZ ...
+// begins at the specified path (path) and recursively searches all directories for PII
+// Includes ability to read .zip files
+func ScanZ(path string) ([]string, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	resultsScan = nil
