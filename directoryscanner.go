@@ -81,7 +81,43 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 		}
 	}
 
-	return err
+	return nil
+}
+
+func readZipSpecific(path string) error {
+	lineNumber := 1
+	var resultsString string
+	r, err := zip.OpenReader(path)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	for _, f := range r.File {
+		rc, err := f.Open()
+		fscanner := bufio.NewScanner(rc)
+		if err != nil {
+			return err
+		}
+		for fscanner.Scan() {
+			for _, dataType := range selectedTypes {
+				for key, cr := range compiledRegexes {
+					if dataType == key {
+						for _, r := range cr {
+							if found := r.Find([]byte(fscanner.Text())); found != nil {
+								resultsString = key + `,` + string(found) + `,` + f.Name + `,` + strconv.Itoa(lineNumber)
+								resultsScan = append(resultsScan, resultsString)
+							}
+						}
+					} else {
+						continue
+					}
+				}
+			}
+			lineNumber++
+		}
+		lineNumber = 1
+	}
+	return nil
 }
 
 func findSpecific(path string, info os.FileInfo, err error) error {
@@ -90,37 +126,7 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 	var resultsString string
 	switch ext := filepath.Ext(info.Name()); ext {
 	case ".zip":
-		r, err := zip.OpenReader(path)
-		if err != nil {
-			return err
-		}
-		defer r.Close()
-		for _, f := range r.File {
-			rc, err := f.Open()
-			fscanner := bufio.NewScanner(rc)
-			if err != nil {
-				return err
-			}
-			for fscanner.Scan() {
-				for _, dataType := range selectedTypes {
-					for key, cr := range compiledRegexes {
-						if dataType == key {
-							for _, r := range cr {
-								if found := r.Find([]byte(fscanner.Text())); found != nil {
-									resultsString = key + `,` + string(found) + `,` + f.Name + `,` + strconv.Itoa(lineNumber)
-									resultsScan = append(resultsScan, resultsString)
-								}
-							}
-						} else {
-							continue
-						}
-					}
-				}
-				lineNumber++
-			}
-			lineNumber = 1
-		}
-
+		readZipSpecific(path)
 	default:
 		file, err := os.Open(path)
 		if err != nil {
@@ -146,7 +152,7 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func findString(path string, info os.FileInfo, err error) error {
@@ -198,7 +204,7 @@ func findString(path string, info os.FileInfo, err error) error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 // Scan ...
