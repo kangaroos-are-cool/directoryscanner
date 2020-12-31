@@ -86,27 +86,64 @@ func scanFiles(path string, info os.FileInfo, err error) error {
 
 func findSpecific(path string, info os.FileInfo, err error) error {
 
-	file, err := os.Open(path)
-	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
-
-	for fscanner.Scan() {
-		for _, dataType := range selectedTypes {
-			for key, cr := range compiledRegexes {
-				if dataType == key {
-					for _, r := range cr {
-						if found := r.Find([]byte(fscanner.Text())); found != nil {
-							resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-							resultsScan = append(resultsScan, resultsString)
+	switch ext := filepath.Ext(info.Name()); ext {
+	case ".zip":
+		r, err := zip.OpenReader(path)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
+		for _, f := range r.File {
+			rc, err := f.Open()
+			fscanner := bufio.NewScanner(rc)
+			if err != nil {
+				return err
+			}
+			for fscanner.Scan() {
+				for _, dataType := range selectedTypes {
+					for key, cr := range compiledRegexes {
+						if dataType == key {
+							for _, r := range cr {
+								if found := r.Find([]byte(fscanner.Text())); found != nil {
+									resultsString = key + `,` + string(found) + `,` + f.Name + `,` + strconv.Itoa(lineNumber)
+									resultsScan = append(resultsScan, resultsString)
+								}
+							}
+						} else {
+							continue
 						}
 					}
-				} else {
-					continue
+				}
+				lineNumber++
+			}
+			lineNumber = 1
+		}
+
+	default:
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		fscanner := bufio.NewScanner(file)
+		for fscanner.Scan() {
+			for _, dataType := range selectedTypes {
+				for key, cr := range compiledRegexes {
+					if dataType == key {
+						for _, r := range cr {
+							if found := r.Find([]byte(fscanner.Text())); found != nil {
+								resultsString = key + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+								resultsScan = append(resultsScan, resultsString)
+							}
+						}
+					} else {
+						continue
+					}
 				}
 			}
+			lineNumber++
 		}
-		lineNumber++
 	}
 
 	return err
