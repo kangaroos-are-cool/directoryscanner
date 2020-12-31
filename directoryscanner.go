@@ -183,20 +183,6 @@ func Scan(path string) ([]string, error) {
 	return resultsScan, nil
 }
 
-// ScanZ ...
-// begins at the specified path (path) and recursively searches all directories for PII
-// Includes ability to read .zip files
-func ScanZ(path string) ([]string, error) {
-	mu.Lock()
-	defer mu.Unlock()
-	resultsScan = nil
-	err := filepath.Walk(path, scanFiles)
-	if err != nil {
-		return nil, err
-	}
-	return resultsScan, nil
-}
-
 // Find ...
 // begins at the specified path (path) and recursively searches all directories
 // acceptable arguments for variatic function: "Credit Card", "SSN", "Word Password", "Word Username", "Email"
