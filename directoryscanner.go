@@ -151,20 +151,51 @@ func findSpecific(path string, info os.FileInfo, err error) error {
 
 func findString(path string, info os.FileInfo, err error) error {
 
-	file, err := os.Open(path)
-	fscanner := bufio.NewScanner(file)
 	lineNumber := 1
 	var resultsString string
 
-	for fscanner.Scan() {
-		for _, v := range selectedStrings {
-			r := regexp.MustCompile(v)
-			if found := r.Find([]byte(fscanner.Text())); found != nil {
-				resultsString = v + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
-				resultsScan = append(resultsScan, resultsString)
-			}
+	switch ext := filepath.Ext(info.Name()); ext {
+	case ".zip":
+		r, err := zip.OpenReader(path)
+		if err != nil {
+			return err
 		}
-		lineNumber++
+		defer r.Close()
+		for _, f := range r.File {
+			rc, err := f.Open()
+			fscanner := bufio.NewScanner(rc)
+			if err != nil {
+				return err
+			}
+			for fscanner.Scan() {
+				for _, v := range selectedStrings {
+					r := regexp.MustCompile(v)
+					if found := r.Find([]byte(fscanner.Text())); found != nil {
+						resultsString = v + `,` + string(found) + `,` + f.Name + `,` + strconv.Itoa(lineNumber)
+						resultsScan = append(resultsScan, resultsString)
+					}
+				}
+				lineNumber++
+			}
+			lineNumber = 1
+		}
+
+	default:
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		fscanner := bufio.NewScanner(file)
+		for fscanner.Scan() {
+			for _, v := range selectedStrings {
+				r := regexp.MustCompile(v)
+				if found := r.Find([]byte(fscanner.Text())); found != nil {
+					resultsString = v + `,` + string(found) + `,` + file.Name() + `,` + strconv.Itoa(lineNumber)
+					resultsScan = append(resultsScan, resultsString)
+				}
+			}
+			lineNumber++
+		}
 	}
 
 	return err

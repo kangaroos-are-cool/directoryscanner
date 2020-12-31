@@ -81,11 +81,11 @@ var _ = Describe("MultipleScan", func() {
 
 // Test for custom strings
 var _ = Describe("CustomScan", func() {
-	Describe("Scanning a folder with 3 known total findings of words dog, cat, and pig", func() {
+	Describe("Scanning a folder with 6 known total findings of words dog, cat, and pig", func() {
 		Context("less than 100 MB in size", func() {
-			It("should return 3 findings", func() {
+			It("should return 6 findings", func() {
 				results, _ := directoryscanner.FindString("./test_cases", "dog", "cat", "pig")
-				Expect(len(results)).To(Equal(3))
+				Expect(len(results)).To(Equal(6))
 			})
 		})
 	})
