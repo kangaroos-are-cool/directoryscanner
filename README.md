@@ -31,7 +31,7 @@ returns a slice of strings containing all findings as specified by the variadic 
 ## TODO:
 - [x] Add simpler way to add new items to scan for
 - [x] Improve Documentation
-- [x] Add ability to scan .zip/.rar files (partially implemented; implemented for 'scan' function, others to follow)
+- [x] Add ability to scan .zip/.rar files (partially implemented; implemented for 'Scan()' function, as well as 'Find()' function. Others to follow)
 - [ ] Performance Improvements
 - [ ] Function to export findings to file
 
